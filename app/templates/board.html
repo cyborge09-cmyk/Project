@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ board.name }} · Chess Board PM{% endblock %}
+{% block content %}
+<div class="board-layout">
+  <section class="board-main">
+    <div class="page-head">
+      <div>
+        <h1 id="board-name">{{ board.name }}</h1>
+        <p class="muted">{{ board.description or "Drag pieces between squares to reassign people." }}</p>
+      </div>
+      <div class="head-actions">
+        <a class="btn btn-ghost" href="/boards/{{ board.id }}/analytics">Analytics</a>
+        <button class="btn btn-primary" id="new-project">New project</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search" id="search" type="search" placeholder="Search projects, tags, people…" aria-label="Search projects">
+      <div class="filters" id="status-filters" role="group" aria-label="Filter by status">
+        <button class="chip is-active" data-status="all" type="button">All</button>
+        {% for key, meta in STATUSES.items() %}
+        <button class="chip" data-status="{{ key }}" type="button" style="--chip: {{ meta.color }}">{{ meta.label }}</button>
+        {% endfor %}
+      </div>
+      <select class="select" id="person-filter" aria-label="Filter by person">
+        <option value="all">Everyone</option>
+      </select>
+    </div>
+
+    <div class="board-frame">
+      <div class="rank-labels" id="rank-labels" aria-hidden="true"></div>
+      <div class="board" id="board" data-board-id="{{ board.id }}" data-rows="{{ board.rows }}" data-cols="{{ board.cols }}"></div>
+      <div class="file-labels" id="file-labels" aria-hidden="true"></div>
+    </div>
+
+    <p class="legend">
+      {% for key, meta in PIECES.items() %}
+      <span class="legend-item"><span class="glyph" style="color: {{ meta.color }}">{{ meta.glyph }}</span> {{ meta.role }}</span>
+      {% endfor %}
+    </p>
+  </section>
+
+  <aside class="board-side">
+    <section class="card">
+      <h2>Team</h2>
+      <p class="muted small">Drag a person onto a square to assign them.</p>
+      <ul class="roster" id="roster"></ul>
+      <form class="inline-form" id="add-person-form">
+        <input type="email" name="email" placeholder="teammate@company.com" required aria-label="Invite by email">
+        <button class="btn btn-ghost" type="submit">Add</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Recent activity</h2>
+      <ul class="activity" id="activity">
+        {% for item in activity %}
+        <li><span class="dot"></span><div><strong>{{ item.actor }}</strong> {{ item.action.replace('.', ' ').replace('_', ' ') }}
+          <span class="muted">{{ item.detail.get('name') or item.detail.get('project') or '' }}</span></div></li>
+        {% else %}
+        <li class="muted">Nothing has happened here yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+
+<div class="drawer" id="drawer" hidden aria-label="Project details"></div>
+<div class="scrim" id="scrim" hidden></div>
+
+<dialog class="modal" id="project-modal">
+  <form id="project-form" method="dialog">
+    <h2 id="project-modal-title">New project</h2>
+    <input type="hidden" name="project_id">
+    <input type="hidden" name="pos_x">
+    <input type="hidden" name="pos_y">
+    <label class="field"><span>Name</span><input name="name" required maxlength="120"></label>
+    <label class="field"><span>Description</span><textarea name="description" rows="3" maxlength="4000"></textarea></label>
+    <div class="field-row">
+      <label class="field"><span>Status</span>
+        <select name="status">
+          {% for key, meta in STATUSES.items() %}<option value="{{ key }}">{{ meta.label }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="field"><span>Progress %</span><input name="progress" type="number" min="0" max="100" value="0"></label>
+    </div>
+    <div class="field-row">
+      <label class="field"><span>Start</span><input name="start_date" type="date"></label>
+      <label class="field"><span>Deadline</span><input name="deadline" type="date"></label>
+    </div>
+    <label class="field"><span>Tags</span><input name="tags" placeholder="platform, q3" maxlength="200"></label>
+    <p class="form-error" id="project-error" hidden></p>
+    <menu class="modal-actions">
+      <button class="btn btn-ghost" value="cancel" type="button" data-close>Cancel</button>
+      <button class="btn btn-primary" type="submit">Save</button>
+    </menu>
+  </form>
+</dialog>
+
+<script id="initial-data" type="application/json">{{ initial | tojson }}</script>
+<script id="piece-meta" type="application/json">{{ PIECES | tojson }}</script>
+<script id="status-meta" type="application/json">{{ STATUSES | tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="/static/js/board.js"></script>{% endblock %}

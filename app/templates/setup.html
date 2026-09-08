@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Set up · Chess Board PM{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Almost there</h1>
+  <p>This deployment has no Supabase project attached yet. Set these environment variables and redeploy:</p>
+  <pre class="code">SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SESSION_SECRET=a-long-random-string</pre>
+  <p>Then run <code>supabase/schema.sql</code> in the Supabase SQL editor to create the tables, policies and triggers.</p>
+  <p class="muted">Full instructions are in the project README.</p>
+</section>
+{% endblock %}

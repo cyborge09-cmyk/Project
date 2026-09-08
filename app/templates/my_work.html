@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}My work · Chess Board PM{% endblock %}
+{% block content %}
+{% set t = workload.totals %}
+<div class="page-head">
+  <div><h1>My work</h1><p class="muted">Every square your piece is standing on.</p></div>
+</div>
+
+<div class="tiles">
+  <div class="card tile"><span class="tile-value">{{ t.projects }}</span><span class="tile-label">In-flight projects</span></div>
+  <div class="card tile"><span class="tile-value">{{ t.hours }}</span><span class="tile-label">Hours allocated</span></div>
+  <div class="card tile {{ 'tile-warn' if t.blocked else '' }}"><span class="tile-value">{{ t.blocked }}</span><span class="tile-label">Blocked</span></div>
+  <div class="card tile {{ 'tile-warn' if t.overallocated else '' }}"><span class="tile-value">{{ 'Yes' if t.overallocated else 'No' }}</span><span class="tile-label">Overallocated</span></div>
+</div>
+
+<section class="card">
+  <h2>Assignments</h2>
+  <table class="table">
+    <thead><tr><th>Project</th><th>Board</th><th>Role</th><th>Status</th><th>Progress</th><th>Deadline</th></tr></thead>
+    <tbody>
+      {% for a in workload.assignments %}
+      <tr>
+        <td><a href="/boards/{{ a.board_id }}?project={{ a.project_id }}">{{ a.project_name }}</a></td>
+        <td class="muted">{{ a.board_name }}</td>
+        <td><span class="glyph" style="color: {{ PIECES[a.piece].color }}">{{ a.glyph }}</span> {{ a.role_label }}</td>
+        <td><span class="pill" style="--pill: {{ STATUSES[a.status].color }}">{{ STATUSES[a.status].label }}</span></td>
+        <td>{{ a.progress }}%</td>
+        <td>{{ a.deadline or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">You are not on any project yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

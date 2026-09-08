@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Analytics · {{ board.name }}{% endblock %}
+{% block content %}
+{% set t = analytics.totals %}
+<div class="page-head">
+  <div>
+    <h1>{{ board.name }} · analytics</h1>
+    <p class="muted">Capacity, throughput and risk across the board.</p>
+  </div>
+  <a class="btn btn-ghost" href="/boards/{{ board.id }}">Back to board</a>
+</div>
+
+<div class="tiles">
+  <div class="card tile"><span class="tile-value">{{ t.projects }}</span><span class="tile-label">Projects on board</span><span class="muted small">{{ t.board_fill }}% of {{ t.squares }} squares</span></div>
+  <div class="card tile"><span class="tile-value">{{ t.avg_progress }}%</span><span class="tile-label">Average progress</span><span class="muted small">Across in-flight work</span></div>
+  <div class="card tile"><span class="tile-value">{{ t.completion_rate }}%</span><span class="tile-label">Completion rate</span><span class="muted small">Completed vs. all projects</span></div>
+  <div class="card tile {{ 'tile-warn' if t.overallocated else '' }}"><span class="tile-value">{{ t.overallocated }}</span><span class="tile-label">Overallocated people</span><span class="muted small">{{ t.people }} people on this board</span></div>
+</div>
+
+<div class="two-col">
+  <section class="card">
+    <h2>Projects by status</h2>
+    {% set max_count = analytics.by_status | map(attribute='count') | max %}
+    <ul class="bars">
+      {% for row in analytics.by_status %}
+      <li>
+        <span class="bar-label">{{ row.label }}</span>
+        <span class="bar-track"><span class="bar-fill" style="width: {{ (100 * row.count / max_count) if max_count else 0 }}%; background: {{ row.color }}"></span></span>
+        <span class="bar-value">{{ row.count }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if t.unstaffed %}<p class="muted small">{{ t.unstaffed }} in-flight project(s) have nobody assigned.</p>{% endif %}
+  </section>
+
+  <section class="card">
+    <h2>At risk</h2>
+    {% if analytics.at_risk %}
+    <table class="table">
+      <thead><tr><th>Project</th><th>Why</th><th>Progress</th><th>Days left</th></tr></thead>
+      <tbody>
+        {% for row in analytics.at_risk %}
+        <tr>
+          <td><a href="/boards/{{ board.id }}?project={{ row.id }}">{{ row.name }}</a></td>
+          <td><span class="pill" style="--pill: {{ STATUSES[row.status].color }}">{{ row.reason }}</span></td>
+          <td>{{ row.progress }}%</td>
+          <td>{{ row.days_left if row.days_left is not none else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted">Nothing blocked, nothing due within a week.</p>{% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Resource allocation</h2>
+  <p class="muted small">A person is flagged when they stand on more than three in-flight projects or carry more than 40 allocated hours.</p>
+  <table class="table">
+    <thead><tr><th>Person</th><th>Main piece</th><th>Projects</th><th>Hours</th><th>Load</th></tr></thead>
+    <tbody>
+      {% for row in analytics.allocation %}
+      <tr class="{{ 'row-warn' if row.overallocated else '' }}">
+        <td><strong>{{ row.name }}</strong><br><span class="muted small">{{ row.job_title or row.email }}</span></td>
+        <td><span class="glyph" style="color: {{ PIECES[row.top_piece].color }}">{{ PIECES[row.top_piece].glyph }}</span> {{ PIECES[row.top_piece].role }}</td>
+        <td>{{ row.project_count }}</td>
+        <td>{{ row.hours }}</td>
+        <td>
+          <span class="bar-track heat"><span class="bar-fill" style="width: {{ [row.project_count * 25, 100] | min }}%; background: {{ '#d9453f' if row.overallocated else '#3b7dd8' }}"></span></span>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">Nobody is assigned to a project yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
