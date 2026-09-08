@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Chess Board PM{% endblock %}
+{% block content %}
+<section class="auth">
+  <div class="auth-art" aria-hidden="true">
+    <div class="mini-board">
+      {% for i in range(64) %}<div class="mini-square {{ 'dark' if ((i // 8) + i) % 2 else 'light' }}">{% if i in [0, 9, 18, 27, 36, 45, 54, 63] %}<span>{{ ['♚','♛','♜','♝','♞','♟','♜','♞'][i // 9] }}</span>{% endif %}</div>{% endfor %}
+    </div>
+    <h2>Every square a project.<br>Every piece a person.</h2>
+    <p>See the whole portfolio, and who is standing on it, in one glance.</p>
+  </div>
+
+  <div class="card auth-form">
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" data-mode="login" role="tab" type="button">Sign in</button>
+      <button class="tab" data-mode="signup" role="tab" type="button">Create account</button>
+    </div>
+    <form id="auth-form" novalidate>
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <label class="field" data-only="signup" hidden>
+        <span>Full name</span>
+        <input type="text" name="full_name" autocomplete="name" maxlength="120">
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required minlength="8" autocomplete="current-password">
+      </label>
+      <p class="form-error" id="auth-error" hidden></p>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/auth.js"></script>{% endblock %}

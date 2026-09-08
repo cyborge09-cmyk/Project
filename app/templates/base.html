@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Chess Board PM{% endblock %}</title>
+  <meta name="description" content="A project management board where every square is a project and every chess piece is a person.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#9814;</text></svg>">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script>
+    // Set the theme before first paint so there is no flash of the wrong palette.
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("theme"); } catch (e) {}
+      var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="brand-glyph">♖</span> <span>Chess Board PM</span></a>
+  {% if user %}
+  <nav class="topnav">
+    <a href="/">Boards</a>
+    <a href="/my-work">My work</a>
+    {% if board %}<a href="/boards/{{ board.id }}">Board</a>
+    <a href="/boards/{{ board.id }}/analytics">Analytics</a>{% endif %}
+  </nav>
+  <div class="topbar-right">
+    <button class="icon-btn" id="theme-toggle" type="button" title="Toggle theme" aria-label="Toggle theme">◐</button>
+    <span class="who" title="{{ user.email }}">{{ user.name or user.email }}</span>
+    <button class="btn btn-ghost" id="logout" type="button">Sign out</button>
+  </div>
+  {% endif %}
+</header>
+
+<main class="page">
+  {% block content %}{% endblock %}
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="/static/js/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

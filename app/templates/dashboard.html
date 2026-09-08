@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Boards · Chess Board PM{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Your boards</h1>
+    <p class="muted">Each board is a grid of squares; each square is a project.</p>
+  </div>
+  <button class="btn btn-primary" id="new-board">New board</button>
+</div>
+
+{% if boards %}
+<div class="board-grid-list">
+  {% for board in boards %}
+  <a class="card board-card" href="/boards/{{ board.id }}">
+    <h2>{{ board.name }}</h2>
+    <p class="muted">{{ board.description or "No description" }}</p>
+    <div class="board-card-meta">
+      <span>{{ board.rows }}×{{ board.cols }} grid</span>
+      <span>{{ board.project_count }} projects</span>
+      {% if board.blocked_count %}<span class="pill pill-blocked">{{ board.blocked_count }} blocked</span>{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<section class="card empty">
+  <p class="empty-glyph">♞</p>
+  <h2>No boards yet</h2>
+  <p class="muted">Create your first board to start placing projects on squares.</p>
+  <button class="btn btn-primary" id="new-board-empty">Create a board</button>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="/static/js/dashboard.js"></script>{% endblock %}
