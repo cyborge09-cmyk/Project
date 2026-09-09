@@ -144,7 +144,9 @@ create index if not exists activity_board_idx on public.activity (board_id, crea
 
 -- ------------------------------------------------------------- triggers ----
 create or replace function public.touch_updated_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql
+set search_path = public
+as $$
 begin
   new.updated_at = now();
   return new;
@@ -264,3 +266,23 @@ drop policy if exists activity_read   on public.activity;
 drop policy if exists activity_insert on public.activity;
 create policy activity_read   on public.activity for select using (public.can_access_board(board_id));
 create policy activity_insert on public.activity for insert with check (public.can_access_board(board_id) and actor_id = auth.uid());
+
+-- --------------------------------------------------------------- grants ----
+-- Postgres grants EXECUTE on new functions to PUBLIC, which would expose every
+-- one of these over /rest/v1/rpc. Revoking from anon/authenticated is not enough:
+-- the PUBLIC grant is the one that has to go.
+revoke execute on function public.handle_new_user()     from public, anon, authenticated;
+revoke execute on function public.add_owner_as_member() from public, anon, authenticated;
+revoke execute on function public.touch_updated_at()    from public, anon, authenticated;
+
+revoke execute on function public.can_access_board(uuid)   from public, anon;
+revoke execute on function public.can_edit_board(uuid)     from public, anon;
+revoke execute on function public.can_access_project(uuid) from public, anon;
+revoke execute on function public.can_edit_project(uuid)   from public, anon;
+
+-- The policies above call these as the signed-in role, so it keeps EXECUTE.
+-- They only ever report whether the *caller* may touch a board they already name.
+grant execute on function public.can_access_board(uuid)   to authenticated;
+grant execute on function public.can_edit_board(uuid)     to authenticated;
+grant execute on function public.can_access_project(uuid) to authenticated;
+grant execute on function public.can_edit_project(uuid)   to authenticated;
