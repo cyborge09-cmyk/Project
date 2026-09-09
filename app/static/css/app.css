@@ -32,6 +32,10 @@ html[data-theme="dark"] {
 
 * { box-sizing: border-box; }
 
+/* Class-level `display` beats the UA rule for [hidden], so restate it here:
+   without this, .field[hidden] (the sign-up-only name field) stays visible. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);
